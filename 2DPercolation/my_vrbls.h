@@ -36,6 +36,7 @@
 // Look for 'PROJECT-DEPENDENT' for different projects
 #include <vector>
 #include<iostream>
+#include "my_algorithm.h"
 #include"my_rng.h"
 #ifndef _MY_VRBLS_
 #define _MY_VRBLS_
@@ -56,7 +57,8 @@ extern int Collect_Interval;
 extern const int Dimension;
 extern int Lx, Ly;
 extern double Poc;
-extern int Vol;
+extern double Pbc;
+extern int Vol; extern double Vol2; extern double Vol4;
 extern int ident;//used to identify cluster
 extern const int NObs;
 extern const int NQuan;
@@ -95,7 +97,6 @@ public:
 		{
 			temp[i] = 0;
 		}
-		percolated_num.resize(Vol);
 		Quan.resize(NObs);
 		//initialize temp  which is the hash function.
 	}
@@ -148,12 +149,6 @@ public:
 	int PercolatedQ()
 	{
 		std::vector<int> up,down;
-		int Q=0;
-		bool temp;
-		for (int i = 0;i < Vol;i++)
-		{
-			percolated_num[i] = 0;
-		}
 		for (int i = 0;i < Ly;i++)
 		{
 			if (this->ele(0, i) != 0)
@@ -161,38 +156,12 @@ public:
 			if (this->ele(Ly-1, i) != 0)
 				down.push_back(this->ele(Ly-1, i));
 		}
-		while(up.size()!=0)
-		{
-			temp=0;
-			for(int i=0;i<down.size();i++)
-			{
-				if(up.front()==down[i])
-				{temp=1;
-				break;}
-			}
-			if (temp)
-			{
-				Q = 1;
-				percolated_num[*(up.begin())]++;
-				Delete_Num(up, *(up.begin()));
-			}
-			else
-			{
-				Delete_Num(up, *(up.begin()));
-			}
-		}
-		//this->Print_ele(std::cout);
-		//std::cout << Q;
-		if (Q == 1)
-			return 1;
-		else
-			return 0;
+		return intersected(up,down);
 	}
 	double Average_Cluster_Size()
 	{
-		long c1=0;long s2=0;long s4=0;
-		int cluster_num = 0;
-		int site_num = 0;
+		long c1=0;unsigned long long s2=0;unsigned long long s4=0;
+		int s1 = 0;double Quan;
 		for (int i = 0;i < Lx;i++)
 		{
 			for (int j = 0;j < Ly;j++)
@@ -203,31 +172,38 @@ public:
 				}
 			}
 		}
-
-		//-----refresh block and we need to calculate cluster number.
-		for (int i = 0;i < Vol;i++)
-		{
+		int t = 0;int ident = 0;
+		for(int i=0;i<temp.size();i++)
+		{	
 			if (temp[i] != 0)
 			{
-				if(percolated_num[i]==0)
+				temp[ident] = temp[i];
+				if (temp[i]>c1)
 				{
-					site_num += temp[i];
-					cluster_num++;
+					c1 = temp[ident];
+					t = ident;
 				}
-			if(temp[i]>c1)
-			{
-				c1=temp[i];
-			}
-			s2+=temp[i]*temp[i];
-			s4+=s2*s2;
 				temp[i] = 0;
+				ident++;  //compress <vector>temp;
 			}
 		}
-		this->Quan[0]=c1;
-		this->Quan[3]=s2;
-		this->Quan[4]=s4;
-		this->Occupied_Sites = site_num;
-		return (double)site_num / cluster_num;
+		if (this->Quan[1] == 1)
+		{
+			temp[t] = 0;
+		}
+		//-----refresh block and we need to calculate cluster number.
+		for (int i = 0;i < ident;i++)
+		{
+			s1 += temp[i];
+			s2 += temp[i] * temp[i];
+			s4 += temp[i] * temp[i] * temp[i] * temp[i];
+			temp[i] = 0;
+		}
+		Quan = (double)s2 / (s1);
+		this->Quan[0]=(double)c1/Vol;
+		this->Quan[3] = (double)s2 / Vol2;
+		this->Quan[4] = (double)s4 / Vol4;
+		return Quan;
 	}
 	void Calculate_Quan()
 	{
@@ -247,9 +223,6 @@ public:
 private:
 	int **p_block;
 	std::vector<int> temp;
-	int Occupied_Sites;
-	std::vector<int> percolated_num;
-
 };
 
 

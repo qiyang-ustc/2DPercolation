@@ -4,6 +4,7 @@
 #include"my_vrbls.h"
 #include<numeric>
 #include<math.h>
+#include<iomanip>
 //Block->Data;
 //Data will be analyzed in Analysis();
 //------------Result-----------------
@@ -40,6 +41,7 @@ void Get_Parameters(std::istream &fin)
 	fin >> Lx;
 	fin >> Ly;
 	fin >> Poc;
+	fin >> Pbc;
 	fin >> NBlock;
 	fin >> NSample;
 	Block_Obs.resize(NBlock);
@@ -51,6 +53,7 @@ void Get_Parameters(std::ifstream &fin)
 	fin >> Lx;
 	fin >> Ly;
 	fin >> Poc;
+	fin >> Pbc;
 	fin >> NBlock;
 	fin >> NSample;
 	Block_Obs.resize(NBlock);
@@ -59,13 +62,15 @@ void Get_Parameters(std::ifstream &fin)
 void write2file(std::ostream &fout)
 {
 
+	fout.setf(std::ios::fixed);
+	fout<<std::setprecision(10);
 	//fout << "Nblock	Nsample	Lx	Ly	p" << std::endl;
-	fout << NBlock << "	" << NSample << "	" << Lx << "    " << Ly << "	 " << Poc<<" ";
+	fout << NBlock << "	 " << NSample << "	 " << Lx << "     " << Ly << "	  " << Poc<<"	 "<<Pbc<<"	";
 	//fout << "		Result:		" << std::endl;
 	//fout << "Lx	Ly	Poc	Quan	Ave	Var	Cor" << std::endl;
 	for (int i = 0;i < NQuan;i++)
 	{
-		fout <<i << "	" << Result_Ave[i] << "	" << sqrt(Result_Var[i]) << "	" << Result_Cor[i] / Result_Var[i] <<" ";
+		fout <<i <<"	 "<< Result_Ave[i] << " 	" << sqrt(Result_Var[i]) << " 	" << Result_Cor[i] / Result_Var[i] <<"  ";
 
 	}
 	fout<<std::endl;
@@ -142,8 +147,13 @@ void Analyze_data()
 			cor += devn*devp;
 			devp = devn;
 		}
+		//--------------c.f. cmd markdown - need to normalize Obs by multiplying 1/sqrt(NBLOCK)
 		Result_Var[i] = var / NBlock;
 		Result_Cor[i] = cor / NBlock;
 	//----------get var and cor finish-------------
+	}
+	for(i=0;i<NObs;i++)
+	{
+		Result_Var[i] = Result_Var[i] / NBlock;
 	}
 }

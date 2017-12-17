@@ -21,8 +21,7 @@ int TossThrown;
 int ident = 1;
 const int Dimension = 2;
 int Lx, Ly, Lz;
-int Vol;
+int Vol;double Vol2;double Vol4;
 double Poc;
+double Pbc;
 //------------Class spin and block--------------
-
-

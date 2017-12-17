@@ -3,6 +3,8 @@
 #include"my_rng.h"
 #ifndef _MY_ALGO_
 #define _MY_ALGO_
+extern bool intersected(std::vector<int> up,std::vector<int> down);// return 1 if a ann b are intersected.
+
 class Union_Find_int
 {
 public:
@@ -15,7 +17,7 @@ public:
 		}
 	}
 	Union_Find_int() {}
-	void Refresh() 
+	void Refresh()
 	{
 		int size = labels.size();
 		for (int i = 0;i < size;i++)
@@ -48,6 +50,19 @@ public:
 	{
 		labels.resize(t);
 		this->Refresh();
+	}
+	void Print_labels(std::ostream& fout)
+	{
+		for (int i = 0;i < this->labels.size();i++)
+		{
+			fout << i<<"	";
+		}
+		fout << std::endl;
+		for (int i = 0;i < this->labels.size();i++)
+		{
+			fout << labels[i]<< "	";
+		}
+		fout << std::endl;
 	}
 private:
 	std::vector<int> labels;
